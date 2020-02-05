@@ -1,4 +1,4 @@
 package environment;
 
-public class cell {
+public class Cell {
 }
