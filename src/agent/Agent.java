@@ -58,7 +58,16 @@ public class Agent {
      * @return List<Cell> Liste des cellules non vides que l'on observe.
      */
     private List<Cell> getBelief(Cell[][] grid) {
-        return new LinkedList<Cell>();
+        List<Cell> emptyCells = new LinkedList<>();
+
+        for (Cell[] rangeCell: grid) {
+            for(Cell cell: rangeCell) {
+                if(cell.getState() == Cell.State.EMPTY) {
+                    emptyCells.add(cell);
+                }
+            }
+        }
+        return emptyCells;
     }
 
     /**
