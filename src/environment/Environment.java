@@ -36,4 +36,8 @@ public class Environment {
         }
     }
 
+
+    // FONCTIONS QUE J'UTILISE, si tu changes le nom, change aussi dans les classes pour l'agent
+    public Cell[][] getGrid() { return new Cell[0][0]; };
+
 }
