@@ -37,7 +37,7 @@ public class Agent implements Runnable {
     private Sensor<Cell[][]> m_gridSensor;
     private Effector m_arms, m_vacuum, m_wheels;
 
-    private Cell[][] m_perceivedGrid;
+    private Stack<Action> m_actions;
 
     public Agent(Environment environment) {
         this.m_environment = environment;
@@ -48,6 +48,7 @@ public class Agent implements Runnable {
         this.m_wheels = new Wheels(m_environment);
 
         this.m_currentPosition = m_environment.getInitialPosition();
+        this.m_actions = new Stack<>();
     }
 
     @Override
@@ -61,9 +62,9 @@ public class Agent implements Runnable {
 
     private void evolve() {
         while(m_isAlive) {
-            this.m_perceivedGrid = observeEnvironment();
-            Stack<Action> actions = updateState(this.m_perceivedGrid);
-            Action action = chooseAction(actions);
+            Cell[][] perceivedGrid = observeEnvironment();
+            m_actions = updateState(perceivedGrid);
+            Action action = chooseAction(m_actions);
             processAction(action);
 
             m_isAlive = m_battery > 0;
