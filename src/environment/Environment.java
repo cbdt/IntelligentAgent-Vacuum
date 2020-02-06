@@ -5,7 +5,7 @@ public class Environment {
     int dustSpawnProbability = 17;
     int jewelDustProbability = 8;
 
-    public class Position {
+    public static class Position {
         int x;
         int y;
 
