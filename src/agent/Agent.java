@@ -1,5 +1,9 @@
 package agent;
 
+import agent.effectors.Arms;
+import agent.effectors.Effector;
+import agent.effectors.Vaccum;
+import agent.effectors.Wheels;
 import agent.sensors.GridSensor;
 import agent.sensors.Sensor;
 import environment.Cell;
@@ -9,30 +13,29 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-public class Agent {
+public class Agent implements Runnable {
 
     //TODO: A renommer, je sais pas encore quel type d'exploration on va faire (cc: Clément C)
-    static enum Exploration { TYPE_1, TYPE_2}
+    enum Exploration { TYPE_1, TYPE_2}
 
-    static enum Action {
+    public enum Action {
         PICK_UP,
-        CLEAN;
-
-        enum MOVE {
-            UP,
-            DOWN,
-            LEFT,
-            RIGHT
-        }
+        CLEAN,
+        MOVE_UP,
+        MOVE_DOWN,
+        MOVE_LEFT,
+        MOVE_RIGHT,
     }
 
     private Environment m_environment;
     private Exploration m_explorationType;
 
+    private int m_battery = 50;
     private boolean m_isAlive = true;
     private Environment.Position m_currentPosition;
 
     private Sensor<Cell[][]> m_gridSensor;
+    private Effector m_arms, m_vacuum, m_wheels;
 
     private Cell[][] m_perceivedGrid;
 
@@ -40,18 +43,30 @@ public class Agent {
         this.m_environment = environment;
 
         this.m_gridSensor = new GridSensor(m_environment);
+        this.m_arms = new Arms(m_environment);
+        this.m_vacuum = new Vaccum(m_environment);
+        this.m_wheels = new Wheels(m_environment);
+
+        this.m_currentPosition = m_environment.getInitialPosition();
+    }
+
+    @Override
+    public void run() {
+        evolve();
     }
 
     public void setExploration(Exploration exploration) {
         this.m_explorationType = exploration;
     }
 
-    public void evolve() {
+    private void evolve() {
         while(m_isAlive) {
             this.m_perceivedGrid = observeEnvironment();
-            updateState(this.m_perceivedGrid);
-            chooseAction();
-            processAction();
+            Stack<Action> actions = updateState(this.m_perceivedGrid);
+            Action action = chooseAction(actions);
+            processAction(action);
+
+            m_isAlive = m_battery > 0;
         }
     }
 
@@ -60,18 +75,52 @@ public class Agent {
         return this.m_gridSensor.analyze();
     }
 
-    private void updateState(Cell[][] perceivedGrid) {
+    private Stack<Action> updateState(Cell[][] perceivedGrid) {
         List<Cell> beliefs = getBelief(perceivedGrid);
         Cell desiredCell = getDesire(beliefs);
-        Stack<Action> actions = getIntention(perceivedGrid, desiredCell);
+        return getIntention(perceivedGrid, desiredCell);
     }
 
-    private void chooseAction() {
-
+    private Action chooseAction(Stack<Action> actions) {
+        return actions.pop();
     }
 
-    private void processAction() {
+    private void processAction(Action action) {
+        switch (action) {
+            case MOVE_UP:
+            case MOVE_DOWN:
+            case MOVE_LEFT:
+            case MOVE_RIGHT:
+                updatePosition(action);
+                m_wheels.makeAction(action);
+                break;
+            case CLEAN:
+                m_vacuum.makeAction(null);
+                break;
+            case PICK_UP:
+                m_arms.makeAction(null);
+                break;
+            default:
+                return;
+        }
+        m_battery--;
+    }
 
+    private void updatePosition(Action action) {
+        switch (action) {
+            case MOVE_UP:
+                m_currentPosition.add(new Environment.Position(0, 1));
+                break;
+            case MOVE_DOWN:
+                m_currentPosition.add(new Environment.Position(0, -1));
+                break;
+            case MOVE_LEFT:
+                m_currentPosition.add(new Environment.Position(-1, 0));
+                break;
+            case MOVE_RIGHT:
+                m_currentPosition.add(new Environment.Position(1, 0));
+                break;
+        }
     }
 
     /**
