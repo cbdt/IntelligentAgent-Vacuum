@@ -83,10 +83,12 @@ public class Agent implements Runnable {
     }
 
     private Action chooseAction(Stack<Action> actions) {
+        if (actions.isEmpty()) return null;
         return actions.pop();
     }
 
     private void processAction(Action action) {
+        if(action == null) { return; } // Ici null veut dire qu'on fait rien, on reste sur la case.
         switch (action) {
             case MOVE_UP:
             case MOVE_DOWN:
@@ -192,6 +194,8 @@ public class Agent implements Runnable {
         }
         return actions;
     }
+
+    // TODO: Algorithmes d'exploration
 
     public Stack<Action> exploration_1(Cell[][] grid, Cell desiredCell) {
         return new Stack<Action>();
