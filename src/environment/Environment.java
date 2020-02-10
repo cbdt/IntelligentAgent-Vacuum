@@ -1,5 +1,7 @@
 package environment;
 
+import agent.Agent;
+
 import java.util.Random;
 
 public class Environment implements Runnable {
@@ -120,6 +122,41 @@ public class Environment implements Runnable {
             default:
                 System.out.println("Error in the environment setState");
         }
+    }
+
+    public int getPerformance() {
+        return performance;
+    }
+
+    public void updatePerformance(Agent.Action action, Position position) {
+        switch (getState(position)) {
+            case JEWEL:
+                if (action == Agent.Action.CLEAN) {
+                    performance = performance - 5;
+                    break;
+                } else if (action == Agent.Action.PICK_UP) {
+                    performance = performance + 10;
+                    break;
+                }
+            case DUST:
+                if (action == Agent.Action.CLEAN) {
+                    performance = performance + 7;
+                    break;
+                }
+            case DUST_JEWEL:
+                if (action == Agent.Action.CLEAN) {
+                    performance = performance - 56;
+                    break;
+                } else if (action == Agent.Action.PICK_UP) {
+                    performance = performance + 10;
+                    break;
+                }
+            case EMPTY:
+                break;
+            default:
+                System.out.println("Error in the environment updatePerformance");
+        }
+
     }
 
     public static class Position {
