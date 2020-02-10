@@ -1,4 +1,5 @@
 package environment;
+
 import java.util.Random;
 
 public class Environment implements Runnable {
@@ -34,8 +35,16 @@ public class Environment implements Runnable {
 
     public void generateJewel() {
         if (rand.nextInt(100) < jewelSpawnProb) {
-            //generate(DUST)
+            //generate(JEWEL)
         }
+    }
+
+    public void display(Position position) {
+        display(position.)
+    }
+
+    public void generate(Cell.State state) {
+
     }
 
     // Fonction pour utiliser un thread, il faut que tu mette la boucle infinie dans cette fonction. Seulement cette fonction est executé (equivalent du main)
@@ -70,9 +79,53 @@ public class Environment implements Runnable {
     public void agentVacuumSignal() {
     }
 
+    public Cell getCell(Position position) {
+        return grid[position.x][position.y];
+    }
+
+    public Cell.State getState(Position position) {
+        return getCell(position).getState();
+    }
+
+    /*public Cell[][] getGrid(){
+        return grid;
+    }*/
+
+    public void setState(Cell.State state, Position position) {
+
+        Cell.State currentState = getState(position);
+        switch (state) {
+            case DUST:
+                if (currentState == Cell.State.JEWEL) {
+                    getCell(position).setM_state(Cell.State.DUST_JEWEL);
+                    break;
+                } else {
+                    getCell(position).setM_state(state);
+                    break;
+                }
+            case JEWEL:
+                if (currentState == Cell.State.DUST) {
+                    getCell(position).setM_state(Cell.State.DUST_JEWEL);
+                    break;
+                } else {
+                    getCell(position).setM_state(state);
+                    break;
+                }
+            case EMPTY:
+                getCell(position).setM_state(state);
+                break;
+            case DUST_JEWEL:
+                getCell(position).setM_state(state);
+                break;
+            default:
+                System.out.println("Error in the environment setState");
+        }
+    }
+
     public static class Position {
         int x;
         int y;
+
 
         public Position(int x, int y) {
             this.x = x;

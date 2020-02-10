@@ -48,10 +48,6 @@ public class Cell {
         this.m_state = m_state;
     }
 
-    public void setState(State state) {
-        this.m_state = state;
-    }
-
     public Environment.Position getPosition() {
         return new Environment.Position(0, 0);
     }
