@@ -41,9 +41,6 @@ public class Environment implements Runnable {
         }
     }
 
-    public void display(Position position) {
-
-    }
 
     public void generate(Cell.State state) {
 
@@ -62,9 +59,26 @@ public class Environment implements Runnable {
         return new Cell[0][0];
     }
 
+
+    // Lorsque l'agent aspire.
+    public void agentVacuumSignal() {
+        updatePerformance(Agent.Action.CLEAN, robotPosition);
+        setNextCellState(Agent.Action.CLEAN, robotPosition);
+        updateUI();
+    }
+
     // Lorsque l'agent bouge, je donne le delta du déplacement. (ex: il a effectué l'action de monté en haut, alors je te donne Position(0, 1), à gauche Position(-1, 0)...
     public void agentMovedSignal(Position position) {
+        robotPosition.update(position);
+        updateUI();
+    }
 
+
+    // Lorsque l'agent fait l'action de ramasser.
+    public void agentPickupSignal() {
+        updatePerformance(Agent.Action.PICK_UP, robotPosition);
+        setNextCellState(Agent.Action.PICK_UP, robotPosition);
+        updateUI();
     }
 
     // Pour que le robot sache où il est au départ.
@@ -72,40 +86,52 @@ public class Environment implements Runnable {
         return new Position(0, 0);
     }
 
-    // Lorsque l'agent fait l'action de ramasser.
-    public void agentPickupSignal(Position position) {
-        System.out.println("Picking up action");
-        updatePerformance(Agent.Action.PICK_UP, position);
-        Cell.State currentState = getState(position);
-        switch (currentState) {
-            case JEWEL:
-                setState(Cell.State.EMPTY, position);
-                display(position);
-                break;
-            case DUST_JEWEL:
-                setState(Cell.State.DUST, position);
-                display(position);
-                break;
-            case DUST:
-                break;
-            case EMPTY:
-                break;
-            default:
-                System.out.println("Error in the environment pickUp");
+
+    private void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    private void updateUI() {
+        clearScreen();
+        for (int y = 0; y < maxY; y++) {
+            System.out.print("|");
+            for (int x = 0; x < maxX; x++) {
+                String symbol = getCellSymbol(new Position(x, y));
+                System.out.println(" " + symbol + " ");
+                if(x == maxX - 1) {
+                    System.out.print("|");
+                }
+            }
+        }
+    }
+
+    private String getCellSymbol(Position position) {
+        Cell.State state = getCellState(position);
+
+        if(position.equals(robotPosition)) {
+            return "X";
         }
 
+        switch (state) {
+            case DUST_JEWEL:
+                return ";";
+            case DUST:
+                return ".";
+            case JEWEL:
+                return ",";
+            case EMPTY:
+                return " ";
+        }
+        return " ";
     }
 
-    // Lorsque l'agent aspire.
-    public void agentVacuumSignal() {
-
-    }
 
     public Cell getCell(Position position) {
         return grid[position.x][position.y];
     }
 
-    public Cell.State getState(Position position) {
+    public Cell.State getCellState(Position position) {
         return getCell(position).getState();
     }
 
@@ -113,34 +139,20 @@ public class Environment implements Runnable {
         return grid;
     }*/
 
-    public void setState(Cell.State state, Position position) {
+    public void setNextCellState(Agent.Action action, Position position) {
 
-        Cell.State currentState = getState(position);
-        switch (state) {
-            case DUST:
+        Cell.State currentState = getCellState(position);
+        switch (action) {
+            case PICK_UP:
                 if (currentState == Cell.State.JEWEL) {
-                    getCell(position).setM_state(Cell.State.DUST_JEWEL);
-                    break;
-                } else {
-                    getCell(position).setM_state(state);
+                    getCell(position).setM_state(Cell.State.EMPTY);
                     break;
                 }
-            case JEWEL:
-                if (currentState == Cell.State.DUST) {
-                    getCell(position).setM_state(Cell.State.DUST_JEWEL);
-                    break;
-                } else {
-                    getCell(position).setM_state(state);
+            case CLEAN:
+                if (currentState == Cell.State.DUST || currentState == Cell.State.DUST_JEWEL || currentState == Cell.State.JEWEL) {
+                    getCell(position).setM_state(Cell.State.EMPTY);
                     break;
                 }
-            case EMPTY:
-                getCell(position).setM_state(state);
-                break;
-            case DUST_JEWEL:
-                getCell(position).setM_state(state);
-                break;
-            default:
-                System.out.println("Error in the environment setState");
         }
     }
 
@@ -149,7 +161,7 @@ public class Environment implements Runnable {
     }
 
     public void updatePerformance(Agent.Action action, Position position) {
-        switch (getState(position)) {
+        switch (getCellState(position)) {
             case JEWEL:
                 if (action == Agent.Action.CLEAN) {
                     performance = performance - 5;
@@ -180,68 +192,6 @@ public class Environment implements Runnable {
     }
 
 
-    public void pickUp(Position position) {
-        System.out.println("Picking up action");
-        updatePerformance(Agent.Action.PICK_UP, position);
-        Cell.State currentState = getState(position);
-        switch (currentState) {
-            case JEWEL:
-                setState(Cell.State.EMPTY, position);
-                display(position);
-                break;
-            case DUST_JEWEL:
-                setState(Cell.State.DUST, position);
-                display(position);
-                break;
-            case DUST:
-                break;
-            case EMPTY:
-                break;
-            default:
-                System.out.println("Error in the environment pickUp");
-
-        }
-    }
-
-
-    public void clean(Position position) {
-        System.out.println("cleaning action");
-        updatePerformance(Agent.Action.CLEAN, position);
-        setState(Cell.State.EMPTY, position);
-        display(position);
-    }
-
-    public void move(Position position) {
-        System.out.println("moving action");
-        robotPosition.update(position);
-    }
-
-    public void updateRobot(Agent.Action action, Position position) {
-        switch (action) {
-            case MOVE_DOWN:
-                move(position);
-                break;
-            case MOVE_UP:
-                move(position);
-                break;
-            case MOVE_LEFT:
-                move(position);
-                break;
-            case MOVE_RIGHT:
-                move(position);
-                break;
-            case CLEAN:
-                clean(position);
-                break;
-            case PICK_UP:
-                pickUp(position);
-                break;
-            default:
-                System.out.println("Error in the environment updateRobot");
-
-        }
-    }
-
     public static class Position {
         int x;
         int y;
@@ -271,6 +221,12 @@ public class Environment implements Runnable {
         public void update(Position position) {
             x += position.x;
             y += position.y;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            Position pos = (Position) obj;
+            return pos.x == this.x && pos.y == this.y;
         }
     }
 
