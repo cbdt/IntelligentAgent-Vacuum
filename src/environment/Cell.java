@@ -70,11 +70,8 @@ public class Cell {
         return position.x < cell.position.x;
     }
 
-    public <Cell> List<Cell> getNeighborCells(Cell cell, Cell[][] grid) {
+    public List<Cell> getNeighborCells(Cell cell, Cell[][] grid) {
         List list = new ArrayList<Cell>();
-
-        if ()
-
     }
 
 

@@ -112,16 +112,16 @@ public class Agent implements Runnable {
     private void updatePosition(Action action) {
         switch (action) {
             case MOVE_UP:
-                m_currentPosition.add(new Environment.Position(0, 1));
+                m_currentPosition.update(new Environment.Position(0, 1));
                 break;
             case MOVE_DOWN:
-                m_currentPosition.add(new Environment.Position(0, -1));
+                m_currentPosition.update(new Environment.Position(0, -1));
                 break;
             case MOVE_LEFT:
-                m_currentPosition.add(new Environment.Position(-1, 0));
+                m_currentPosition.update(new Environment.Position(-1, 0));
                 break;
             case MOVE_RIGHT:
-                m_currentPosition.add(new Environment.Position(1, 0));
+                m_currentPosition.update(new Environment.Position(1, 0));
                 break;
         }
     }
