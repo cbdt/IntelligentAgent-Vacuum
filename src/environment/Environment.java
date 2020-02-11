@@ -60,7 +60,6 @@ public class Environment implements Runnable {
                 cell.setState(state);
                 break;
         }
-        updateUI();
     }
 
     // Fonction pour utiliser un thread, il faut que tu mette la boucle infinie dans cette fonction. Seulement cette fonction est executé (equivalent du main)
@@ -70,6 +69,7 @@ public class Environment implements Runnable {
         while (true) {
             generateDust();
             generateJewel();
+            updateUI();
             try {
                 Thread.sleep(updateTime);
             } catch (Exception e) {
