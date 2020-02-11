@@ -6,10 +6,10 @@ import java.util.Random;
 
 public class Environment implements Runnable {
     //taille grille
-    public int minX = 0;
-    public int maxX = 4;
-    public int minY = 0;
-    public int maxY = 4;
+    private static int minX = 0;
+    private static int maxX = 4;
+    private static int minY = 0;
+    private static int maxY = 4;
     //proba d'apparition
     public int dustSpawnProb = 17;
     public int jewelSpawnProb = 6;
@@ -31,26 +31,50 @@ public class Environment implements Runnable {
 
     public void generateDust() {
         if (rand.nextInt(100) < dustSpawnProb) {
-            //generate(DUST)
+            generate(Cell.State.DUST);
         }
     }
 
     public void generateJewel() {
         if (rand.nextInt(100) < jewelSpawnProb) {
-            //generate(JEWEL)
+            generate(Cell.State.JEWEL);
         }
     }
 
 
     public void generate(Cell.State state) {
-
+        Position randomPosition = Position.random();
+        Cell cell = getCell(randomPosition);
+        Cell.State currentState = getCellState(randomPosition);
+        switch (currentState) {
+            case DUST:
+                if(state == Cell.State.JEWEL) {
+                    cell.setState(Cell.State.DUST_JEWEL);
+                }
+                break;
+            case JEWEL:
+                if(state == Cell.State.DUST) {
+                    cell.setState(Cell.State.DUST_JEWEL);
+                }
+            case EMPTY:
+                cell.setState(state);
+                break;
+        }
+        updateUI();
     }
 
     // Fonction pour utiliser un thread, il faut que tu mette la boucle infinie dans cette fonction. Seulement cette fonction est executé (equivalent du main)
     @Override
     public void run() {
+        initGrid();
         while (true) {
-
+            generateDust();
+            generateJewel();
+            try {
+                Thread.sleep(updateTime);
+            } catch (Exception e) {
+                System.out.println(e.getLocalizedMessage());
+            }
         }
     }
 
@@ -135,22 +159,18 @@ public class Environment implements Runnable {
         return getCell(position).getState();
     }
 
-    /*public Cell[][] getGrid(){
-        return grid;
-    }*/
-
     public void setNextCellState(Agent.Action action, Position position) {
 
         Cell.State currentState = getCellState(position);
         switch (action) {
             case PICK_UP:
                 if (currentState == Cell.State.JEWEL) {
-                    getCell(position).setM_state(Cell.State.EMPTY);
+                    getCell(position).setState(Cell.State.EMPTY);
                     break;
                 }
             case CLEAN:
                 if (currentState == Cell.State.DUST || currentState == Cell.State.DUST_JEWEL || currentState == Cell.State.JEWEL) {
-                    getCell(position).setM_state(Cell.State.EMPTY);
+                    getCell(position).setState(Cell.State.EMPTY);
                     break;
                 }
         }
@@ -227,6 +247,13 @@ public class Environment implements Runnable {
         public boolean equals(Object obj) {
             Position pos = (Position) obj;
             return pos.x == this.x && pos.y == this.y;
+        }
+
+        public static Position random() {
+            Random r = new Random();
+            int x = r.nextInt(maxX);
+            int y = r.nextInt(maxY);
+            return new Position(x, y);
         }
     }
 
