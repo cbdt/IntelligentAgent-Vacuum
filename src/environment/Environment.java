@@ -6,10 +6,10 @@ import java.util.Random;
 
 public class Environment implements Runnable {
     //taille grille
-    private static int minX = 0;
-    private static int maxX = 4;
-    private static int minY = 0;
-    private static int maxY = 4;
+    static int minX = 0;
+    static int maxX = 4;
+    static int minY = 0;
+    static int maxY = 4;
     //proba d'apparition
     public int dustSpawnProb = 17;
     public int jewelSpawnProb = 6;

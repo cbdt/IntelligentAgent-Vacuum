@@ -1,7 +1,10 @@
 package environment;
 
+import agent.Agent;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class Cell {
     public enum State {
@@ -42,8 +45,26 @@ public class Cell {
         return !equalCells(c1, c2);
     }
 
-    public static Cell[] getCellPath(Cell start, Cell end) {
+    public static Stack<Cell> getCellPath(Cell start, Cell end, List<Agent.Tree> Parent) {
 
+        Stack<Cell> cellpath = new Stack<Cell>();
+
+        Cell cell = end;
+        while (cell != start)
+        {
+            cellpath.push(cell);
+           for( Agent.Tree parent : Parent){
+
+               if(cell == parent.getEnfant()){
+                   cell = parent.getParent();
+                   break;
+               }
+           }
+        }
+
+        cellpath.push(start);
+
+        return cellpath;
     }
 
     public void setState(State m_state) {
@@ -70,8 +91,22 @@ public class Cell {
         return position.x < cell.position.x;
     }
 
-    public List<Cell> getNeighborCells(Cell cell, Cell[][] grid) {
+    public static List<Cell> getNeighborCells(Cell cell, Cell[][] grid) {
         List list = new ArrayList<Cell>();
+
+        if (cell.position.y > Environment.minY)
+            list.add(grid[cell.position.x][ cell.position.y - 1]);
+
+        if (cell.position.x < Environment.maxX)
+            list.add(grid[cell.position.x + 1][ cell.position.y]);
+
+        if (cell.position.y < Environment.maxY)
+            list.add(grid[cell.position.x][ cell.position.y + 1]);
+
+        if (cell.position.x > Environment.minX)
+            list.add(grid[cell.position.x - 1][ cell.position.y]);
+
+        return list;
     }
 
 

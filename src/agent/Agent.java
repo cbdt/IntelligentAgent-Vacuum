@@ -16,7 +16,7 @@ import java.util.Stack;
 
 public class Agent implements Runnable {
 
-    //TODO: A renommer, je sais pas encore quel type d'exploration on va faire (cc: Clément C)
+
     enum Exploration { BFS, GREEDY}
 
     public enum Action {
@@ -245,7 +245,7 @@ public class Agent implements Runnable {
         Cell Start_Enfant = getRobotCell(grid);
         Cell End = desiredCell;
         List<Cell> frontiere = new ArrayList<Cell>();
-        frontiere.add(Start);
+        frontiere.add(Start_Enfant);
         // on fait une liste des endroits déjà explorer
         List<Tree> Parent = new ArrayList<Tree>();
 
