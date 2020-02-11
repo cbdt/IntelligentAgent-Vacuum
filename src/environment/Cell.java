@@ -46,7 +46,7 @@ public class Cell {
 
     }
 
-    public void setM_state(State m_state) {
+    public void setState(State m_state) {
         this.m_state = m_state;
     }
 
