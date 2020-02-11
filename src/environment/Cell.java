@@ -19,9 +19,11 @@ public class Cell {
         return m_state;
     }
 
+    public Cell() {
+        this(0, 0);
+    }
+
     public Cell(int x, int y) {
-        x = 0;
-        y = 0;
         this.m_state = State.EMPTY;
         Environment.Position position = new Environment.Position(x, y);
     }
