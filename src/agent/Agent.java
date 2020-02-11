@@ -200,7 +200,7 @@ public class Agent implements Runnable {
 
     private Cell getRobotCell(Cell[][] grid) //todo Resoudre pour avoir les pos du robot à l'etat initial
     {
-        return grid[position.x, position.y];
+        return grid[m_currentPosition.getX()][m_currentPosition.getY()];
     }
 
     public class Tree {

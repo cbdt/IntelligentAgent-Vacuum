@@ -111,23 +111,47 @@ public class Environment implements Runnable {
     }
 
 
-    private void clearScreen() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
+
+    private void clearConsole()
+    {
+        try
+        {
+            final String os = System.getProperty("os.name");
+
+            if (os.contains("Windows"))
+            {
+                Runtime.getRuntime().exec("cls");
+            }
+            else
+            {
+                Runtime.getRuntime().exec("clear");
+            }
+        }
+        catch (final Exception e)
+        {
+            System.out.println(e.getLocalizedMessage());
+        }
     }
 
     private void updateUI() {
-        clearScreen();
+        clearConsole();
+        displayLine();
         for (int y = 0; y < maxY; y++) {
             System.out.print("|");
             for (int x = 0; x < maxX; x++) {
                 String symbol = getCellSymbol(new Position(x, y));
-                System.out.println(" " + symbol + " ");
-                if(x == maxX - 1) {
-                    System.out.print("|");
-                }
+                System.out.print(" " + symbol + " ");
             }
+            System.out.println("|");
         }
+        displayLine();
+    }
+
+    private void displayLine() {
+        for (int i = 0; i < (3*(maxX+1))-1; i++) {
+            System.out.print("_");
+        }
+        System.out.print("\n");
     }
 
     private String getCellSymbol(Position position) {
