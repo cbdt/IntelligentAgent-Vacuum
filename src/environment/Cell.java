@@ -70,8 +70,22 @@ public class Cell {
         return position.x < cell.position.x;
     }
 
-    public List<Cell> getNeighborCells(Cell cell, Cell[][] grid) {
+    public static List<Cell> getNeighborCells(Cell cell, Cell[][] grid) {
         List list = new ArrayList<Cell>();
+
+        if (cell.position.y > Environment.minY)
+            list.add(grid[cell.position.x][ cell.position.y - 1]);
+
+        if (cell.position.x < Environment.maxX)
+            list.add(grid[cell.position.x + 1][ cell.position.y]);
+
+        if (cell.position.y < Environment.maxY)
+            list.add(grid[cell.position.x][ cell.position.y + 1]);
+
+        if (cell.position.x > Environment.minX)
+            list.add(grid[cell.position.x - 1][ cell.position.y]);
+
+        return list;
     }
 
 
