@@ -14,10 +14,10 @@ public class Wheels extends Effector{
         Environment.Position pos = new Environment.Position(0, 0);
         switch (action) {
             case MOVE_UP:
-                pos.setY(1);
+                pos.setY(-1);
                 break;
             case MOVE_DOWN:
-                pos.setY(-1);
+                pos.setY(1);
                 break;
             case MOVE_LEFT:
                 pos.setX(-1);
@@ -26,6 +26,7 @@ public class Wheels extends Effector{
                 pos.setX(1);
                 break;
         }
+
         getEnvionment().agentMovedSignal(pos);
     }
 }

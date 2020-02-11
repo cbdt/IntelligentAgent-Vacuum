@@ -4,6 +4,7 @@ import agent.Agent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 public class Cell {
@@ -28,13 +29,12 @@ public class Cell {
 
     public Cell(int x, int y) {
         this.m_state = State.EMPTY;
-        Environment.Position position = new Environment.Position(x, y);
+        this.position= new Environment.Position(x, y);
     }
 
-    public Cell(Environment.Position position, State state) {
-        state = State.EMPTY;
-        this.position = position;
-
+    @Override
+    public String toString() {
+        return "Cell " + position;
     }
 
     public static boolean equalCells(Cell c1, Cell c2) {
@@ -45,26 +45,29 @@ public class Cell {
         return !equalCells(c1, c2);
     }
 
-    public static Stack<Cell> getCellPath(Cell start, Cell end, List<Agent.Tree> Parent) {
+    public static Stack<Cell> getCellPath(Cell end, Map<Cell, Cell> parentsChild) {
 
-        Stack<Cell> cellpath = new Stack<Cell>();
+        Stack<Cell> cellPath = new Stack<>();
 
         Cell cell = end;
-        while (cell != start)
+        while (cell != null)
         {
-            cellpath.push(cell);
-           for( Agent.Tree parent : Parent){
+
+            cellPath.push(cell);
+            cell = parentsChild.get(cell);
+
+
+
+           /*for( Agent.Tree parent : visited){
 
                if(cell == parent.getEnfant()){
                    cell = parent.getParent();
                    break;
                }
-           }
+           }*/
         }
 
-        cellpath.push(start);
-
-        return cellpath;
+        return cellPath;
     }
 
     public void setState(State m_state) {

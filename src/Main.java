@@ -11,6 +11,10 @@ public class Main {
         Thread agentThread = new Thread(new Agent(environment));
 
         environmentThread.start();
+        try {
+            Thread.sleep(100); // le temps que l'environnement s'initialise.
+        } catch (InterruptedException e) {
+        }
         agentThread.start();
     }
 }

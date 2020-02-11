@@ -47,6 +47,8 @@ public class Agent implements Runnable {
 
         this.m_currentPosition = m_environment.getInitialPosition();
         this.m_actions = new Stack<>();
+
+        this.m_explorationType = Exploration.BFS;
     }
 
     @Override
@@ -76,7 +78,7 @@ public class Agent implements Runnable {
 
     private Stack<Action> updateState(Cell[][] perceivedGrid) {
         List<Cell> beliefs = getBelief(perceivedGrid);
-        Cell desiredCell = getDesire(beliefs);
+        Cell desiredCell = getDesire(beliefs);;
         return getIntention(perceivedGrid, desiredCell);
     }
 
@@ -110,10 +112,10 @@ public class Agent implements Runnable {
     private void updatePosition(Action action) {
         switch (action) {
             case MOVE_UP:
-                m_currentPosition.update(new Environment.Position(0, 1));
+                m_currentPosition.update(new Environment.Position(0, -1));
                 break;
             case MOVE_DOWN:
-                m_currentPosition.update(new Environment.Position(0, -1));
+                m_currentPosition.update(new Environment.Position(0, 1));
                 break;
             case MOVE_LEFT:
                 m_currentPosition.update(new Environment.Position(-1, 0));
@@ -129,16 +131,18 @@ public class Agent implements Runnable {
      * @return List<Cell> Liste des cellules non vides que l'on observe.
      */
     private List<Cell> getBelief(Cell[][] grid) {
-        List<Cell> emptyCells = new LinkedList<>();
+        List<Cell> nonEmptyCells = new LinkedList<>();
 
-        for (Cell[] rangeCell: grid) {
-            for(Cell cell: rangeCell) {
-                if(cell.getState() == Cell.State.EMPTY) {
-                    emptyCells.add(cell);
+        for (int x = 0; x < grid.length; x++) {
+            for(int y = 0; y < grid[x].length; y++) {
+                Cell cell = grid[x][y];
+                if(cell == null) { continue; } // l'environnement n'a pas encore fait initGrid()
+                if(cell.getState() != Cell.State.EMPTY) {
+                    nonEmptyCells.add(cell);
                 }
             }
         }
-        return emptyCells;
+        return nonEmptyCells;
     }
 
     /**
@@ -149,7 +153,6 @@ public class Agent implements Runnable {
     private Cell getDesire(List<Cell> beliefs) {
         double bestPerformance = Integer.MIN_VALUE;
         Cell bestCell = new Cell();
-
         for(Cell cell: beliefs) {
             double currentPerformance = getPerformance(cell);
             if(currentPerformance > bestPerformance)  {
@@ -172,22 +175,23 @@ public class Agent implements Runnable {
         // Car là il se déplace même si c'est pas rentable.
         // Le seuil peut-être de 0, pas perdant.
 
-        if(getPerformance(desiredCell) < 0) { // on fait rien si pas rentable de se déplacer.
+        /*if(getPerformance(desiredCell) < 0) { // on fait rien si pas rentable de se déplacer.
+            System.out.println("epty");
             return new Stack<>();
-        }
+        }*/
 
         return explore(grid, desiredCell);
     }
 
     public Stack<Action> explore(Cell[][] grid, Cell desiredCell) {
-        Stack<Action> actions = new Stack<>();
+        Stack<Action> actions = null; // jamais null
 
         switch (this.m_explorationType) {
             case BFS:
                 actions = exploration_BFS(grid, desiredCell);
                 break;
             case GREEDY:
-                actions =  exploration_GREEDY(grid, desiredCell);
+                //actions =  exploration_GREEDY(grid, desiredCell);
                 break;
         }
         return actions;
@@ -199,12 +203,16 @@ public class Agent implements Runnable {
     {
         return grid[m_currentPosition.getX()][m_currentPosition.getY()];
     }
-
+/*
     public class Tree {
 
         public Cell Parent;
-        public Cell Enfant;
+        public Tree Enfant;
         public double Distance;
+
+        public Tree(Cell parent) {
+            this(parent, null, 1);
+        }
 
         public Tree(Cell Parent , Cell Enfant, double Distance){
             this.Parent = Parent;
@@ -235,55 +243,49 @@ public class Agent implements Runnable {
         public Cell getParent() {
             return Parent;
         }
-    }
+    }*/
 
 
 
     public Stack<Action> exploration_BFS(Cell[][] grid, Cell desiredCell) {
 
-        Cell Start_Enfant = getRobotCell(grid);
-        Cell End = desiredCell;
-        List<Cell> frontiere = new ArrayList<Cell>();
-        frontiere.add(Start_Enfant);
+        Map<Cell, Cell> parentsChild = new HashMap<>(); // Enfant: Parent
+        Cell start = getRobotCell(grid);
+        Cell end = desiredCell;
+        LinkedList<Cell> frontiere = new LinkedList<Cell>();
+        frontiere.add(start);
+
         // on fait une liste des endroits déjà explorer
-        List<Tree> Parent = new ArrayList<Tree>();
+        LinkedList<Cell> visited = new LinkedList<>();
+        visited.add(start);
 
+        parentsChild.put(start, null); // pas de parent
 
-        Tree Start = null ;
-        Start.setEnfant(Start_Enfant);
+        while (!frontiere.isEmpty()){
 
-        Parent.add(Start);
+            Cell currentCell = frontiere.poll();
 
-        while (frontiere != null){
-
-            Cell CurentCell = frontiere.get(0);
-            frontiere.remove(0);
-
-            if(CurentCell == End){
-
-
-                break;}
-
-            for (Cell cell: Cell.getNeighborCells(CurentCell,grid)) {
-                if(Parent.contains(cell)) continue;
+            if(currentCell == end){  break;}
+            List<Cell> neighbors = Cell.getNeighborCells(currentCell,grid);
+            for (Cell cell: neighbors) {
+                if(visited.contains(cell)) continue;
                 frontiere.add(cell);
-                Tree Noeud =null;
-                Noeud.setEnfant(cell);
-                Noeud.setParent(CurentCell);
-                Parent.add(Noeud);
+                parentsChild.put(cell, currentCell);
+                visited.add(cell);
             }
 
         }
-        Stack<Cell> cellpath = Cell.getCellPath(Start_Enfant,End,Parent);
-        Stack<Action> Action = getAction(cellpath);
+        Stack<Cell> cellPath = Cell.getCellPath(end, parentsChild);
+        Stack<Action> actions = getActions(cellPath);
 
-        return  Action;
+
+        return  actions;
     }
 
 
 
 
-
+/*
     public Stack<Action> exploration_GREEDY(Cell[][] grid, Cell desiredCell) {
 
         Cell Start = getRobotCell(grid);
@@ -332,12 +334,11 @@ public class Agent implements Runnable {
 
 
         }
-
         Stack<Cell> cellpath = Cell.getCellPath(Start,End,Parent);
-       Stack<Action> Action = getAction(cellpath);
+        Stack<Action> Action = getAction(cellpath);
 
         return  Action;
-    }
+    }*/
 
 
 
@@ -378,10 +379,11 @@ public class Agent implements Runnable {
         return Math.sqrt(Math.pow(b.getX() - a.getX(), 2) + Math.pow(b.getY() - a.getY(), 2));
     }
 
-    public static Stack<Action> getAction(Stack<Cell> cellpath){
-       List<Action> actionPath = new ArrayList<Action>();
+    public Stack<Action> getActions(Stack<Cell> cellpath){
+        List<Action> actionPath = new ArrayList<Action>();
 
-        while (cellpath.empty() == false)
+
+        while (!cellpath.isEmpty() && cellpath.size() >= 2)
         {
             Cell cell = cellpath.pop();
             Cell nextCell = cellpath.peek();
@@ -391,17 +393,31 @@ public class Agent implements Runnable {
             if (cell.isRightFrom(nextCell)) actionPath.add(0,Action.MOVE_LEFT);
         }
 
-        Stack<Action> Action = new Stack<Action>();
+        Stack<Action> actions = new Stack<Action>();
 
-        while(actionPath.isEmpty()== false){
+        if(!actionPath.isEmpty()) {
+                Cell desiredCell = cellpath.get(cellpath.size() - 1);
 
-            Action.push(actionPath.get(0));
-            actionPath.remove(0);
+                switch (desiredCell.getState()) {
+                    case DUST:
+                        actions.push(Action.CLEAN);
+                        break;
+                    case JEWEL:
+                        actions.push(Action.PICK_UP);
+                    case DUST_JEWEL:
+                        actions.push(Action.CLEAN);
+                        actions.push(Action.PICK_UP);
+                        break;
 
+                }
 
+                while (!actionPath.isEmpty()) {
+                    actions.push(actionPath.get(0));
+                    actionPath.remove(0);
+                }
         }
 
-        return Action;
+        return actions;
 
 
     }

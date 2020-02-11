@@ -15,15 +15,15 @@ public class Environment implements Runnable {
     public int jewelSpawnProb = 6;
     //robot
     public int performance;
-    public Position robotPosition = new Position(2, 2);
+    public Position robotPosition = new Position(0, 0);
     Random rand = new Random();
     //Grille
     private Cell[][] grid = new Cell[maxX + 1][maxY + 1];
     private int updateTime = 500;
 
     public void initGrid() {
-        for (int x = 0; x < maxX; x++) {
-            for (int y = 0; y < maxY; y++) {
+        for (int x = 0; x <= maxX; x++) {
+            for (int y = 0; y <= maxY; y++) {
                 grid[x][y] = new Cell(x, y);
             }
         }
@@ -41,6 +41,7 @@ public class Environment implements Runnable {
         }
     }
 
+    // TODO: Changer le type d'exploration
 
     public void generate(Cell.State state) {
         Position randomPosition = Position.random();
@@ -80,7 +81,7 @@ public class Environment implements Runnable {
 
     // FONCTIONS QUE J'UTILISE, si tu changes le nom, change aussi dans les classes pour l'agent
     public Cell[][] getGrid() {
-        return new Cell[0][0];
+        return grid;
     }
 
 
@@ -135,6 +136,7 @@ public class Environment implements Runnable {
 
     private void updateUI() {
         clearConsole();
+        System.out.println("Performance: " + getPerformance());
         displayLine();
         for (int y = 0; y < maxY; y++) {
             System.out.print("|");
@@ -278,6 +280,11 @@ public class Environment implements Runnable {
             int x = r.nextInt(maxX);
             int y = r.nextInt(maxY);
             return new Position(x, y);
+        }
+
+        @Override
+        public String toString() {
+            return "(" + x + "; " + y + ")";
         }
     }
 
