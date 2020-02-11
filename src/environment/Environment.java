@@ -42,7 +42,7 @@ public class Environment implements Runnable {
     }
 
     public void display(Position position) {
-        display(position.)
+
     }
 
     public void generate(Cell.State state) {
@@ -73,12 +73,32 @@ public class Environment implements Runnable {
     }
 
     // Lorsque l'agent fait l'action de ramasser.
-    public void agentPickupSignal() {
+    public void agentPickupSignal(Position position) {
+        System.out.println("Picking up action");
+        updatePerformance(Agent.Action.PICK_UP, position);
+        Cell.State currentState = getState(position);
+        switch (currentState) {
+            case JEWEL:
+                setState(Cell.State.EMPTY, position);
+                display(position);
+                break;
+            case DUST_JEWEL:
+                setState(Cell.State.DUST, position);
+                display(position);
+                break;
+            case DUST:
+                break;
+            case EMPTY:
+                break;
+            default:
+                System.out.println("Error in the environment pickUp");
+        }
 
     }
 
     // Lorsque l'agent aspire.
     public void agentVacuumSignal() {
+
     }
 
     public Cell getCell(Position position) {
@@ -157,6 +177,69 @@ public class Environment implements Runnable {
                 System.out.println("Error in the environment updatePerformance");
         }
 
+    }
+
+
+    public void pickUp(Position position) {
+        System.out.println("Picking up action");
+        updatePerformance(Agent.Action.PICK_UP, position);
+        Cell.State currentState = getState(position);
+        switch (currentState) {
+            case JEWEL:
+                setState(Cell.State.EMPTY, position);
+                display(position);
+                break;
+            case DUST_JEWEL:
+                setState(Cell.State.DUST, position);
+                display(position);
+                break;
+            case DUST:
+                break;
+            case EMPTY:
+                break;
+            default:
+                System.out.println("Error in the environment pickUp");
+
+        }
+    }
+
+
+    public void clean(Position position) {
+        System.out.println("cleaning action");
+        updatePerformance(Agent.Action.CLEAN, position);
+        setState(Cell.State.EMPTY, position);
+        display(position);
+    }
+
+    public void move(Position position) {
+        System.out.println("moving action");
+        robotPosition.update(position);
+    }
+
+    public void updateRobot(Agent.Action action, Position position) {
+        switch (action) {
+            case MOVE_DOWN:
+                move(position);
+                break;
+            case MOVE_UP:
+                move(position);
+                break;
+            case MOVE_LEFT:
+                move(position);
+                break;
+            case MOVE_RIGHT:
+                move(position);
+                break;
+            case CLEAN:
+                clean(position);
+                break;
+            case PICK_UP:
+                pickUp(position);
+                break;
+            default:
+                System.out.println("Error in the environment updateRobot");
+
+        }
     }
 
     public static class Position {
