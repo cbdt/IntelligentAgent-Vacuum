@@ -9,10 +9,7 @@ import agent.sensors.Sensor;
 import environment.Cell;
 import environment.Environment;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class Agent implements Runnable {
 
@@ -240,6 +237,8 @@ public class Agent implements Runnable {
         }
     }
 
+
+
     public Stack<Action> exploration_BFS(Cell[][] grid, Cell desiredCell) {
 
         Cell Start_Enfant = getRobotCell(grid);
@@ -265,8 +264,7 @@ public class Agent implements Runnable {
 
                 break;}
 
-            for (Cell cell: Cell.getNeighborCells(CurentCell,grid)
-                 ) {
+            for (Cell cell: Cell.getNeighborCells(CurentCell,grid)) {
                 if(Parent.contains(cell)) continue;
                 frontiere.add(cell);
                 Tree Noeud =null;
@@ -274,13 +272,12 @@ public class Agent implements Runnable {
                 Noeud.setParent(CurentCell);
                 Parent.add(Noeud);
             }
-            // TODO retrouver le chemin ( partir de la cellule END puis remonter la liste grace aux parents)
-            //avec algo en largeur, la liste parents contient tous les noeud vérifier
 
         }
+        Stack<Cell> cellpath = Cell.getCellPath(Start_Enfant,End,Parent);
+        Stack<Action> Action = getAction(cellpath);
 
-
-        return new Stack<Action>();
+        return  Action;
     }
 
 
@@ -335,12 +332,14 @@ public class Agent implements Runnable {
 
 
         }
-/**
-        var cellPath = Cell.getCellPath(startCell, destination, cameFrom);
-        var actions = getActions(cellPath);
- */
-        return new Stack<Action>();
+
+        Stack<Cell> cellpath = Cell.getCellPath(Start,End,Parent);
+       Stack<Action> Action = getAction(cellpath);
+
+        return  Action;
     }
+
+
 
     /** UTILITY FUNCTION */
 
@@ -377,5 +376,33 @@ public class Agent implements Runnable {
 
     public double getDistance(Environment.Position a, Environment.Position b) {
         return Math.sqrt(Math.pow(b.getX() - a.getX(), 2) + Math.pow(b.getY() - a.getY(), 2));
+    }
+
+    public static Stack<Action> getAction(Stack<Cell> cellpath){
+       List<Action> actionPath = new ArrayList<Action>();
+
+        while (cellpath.empty() == false)
+        {
+            Cell cell = cellpath.pop();
+            Cell nextCell = cellpath.peek();
+            if (cell.isBelow(nextCell)) actionPath.add(0,Action.MOVE_UP);
+            if (cell.isLeftFrom(nextCell)) actionPath.add(0,Action.MOVE_RIGHT);
+            if (cell.isAbove(nextCell)) actionPath.add(0,Action.MOVE_DOWN);
+            if (cell.isRightFrom(nextCell)) actionPath.add(0,Action.MOVE_LEFT);
+        }
+
+        Stack<Action> Action = new Stack<Action>();
+
+        while(actionPath.isEmpty()== false){
+
+            Action.push(actionPath.get(0));
+            actionPath.remove(0);
+
+
+        }
+
+        return Action;
+
+
     }
 }
