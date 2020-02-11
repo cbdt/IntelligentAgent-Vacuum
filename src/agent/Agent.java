@@ -9,6 +9,7 @@ import agent.sensors.Sensor;
 import environment.Cell;
 import environment.Environment;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -16,7 +17,7 @@ import java.util.Stack;
 public class Agent implements Runnable {
 
     //TODO: A renommer, je sais pas encore quel type d'exploration on va faire (cc: Clément C)
-    enum Exploration { TYPE_1, TYPE_2}
+    enum Exploration { BFS, GREEDY}
 
     public enum Action {
         PICK_UP,
@@ -185,11 +186,11 @@ public class Agent implements Runnable {
         Stack<Action> actions = new Stack<>();
 
         switch (this.m_explorationType) {
-            case TYPE_1:
-                actions = exploration_1(grid, desiredCell);
+            case BFS:
+                actions = exploration_BFS(grid, desiredCell);
                 break;
-            case TYPE_2:
-                actions =  exploration_2(grid, desiredCell);
+            case GREEDY:
+                actions =  exploration_GREEDY(grid, desiredCell);
                 break;
         }
         return actions;
@@ -197,11 +198,147 @@ public class Agent implements Runnable {
 
     // TODO: Algorithmes d'exploration
 
-    public Stack<Action> exploration_1(Cell[][] grid, Cell desiredCell) {
+    private Cell getRobotCell(Cell[][] grid) //todo Resoudre pour avoir les pos du robot à l'etat initial
+    {
+        return grid[position.x, position.y];
+    }
+
+    public class Tree {
+
+        public Cell Parent;
+        public Cell Enfant;
+        public double Distance;
+
+        public Tree(Cell Parent , Cell Enfant, double Distance){
+            this.Parent = Parent;
+            this.Enfant = Enfant;
+            this.Distance = Distance;
+        }
+
+        public void setEnfant(Cell enfant) {
+            Enfant = enfant;
+        }
+
+        public void setParent(Cell parent) {
+            Parent = parent;
+        }
+
+        public void setDistance(double distance) {
+            Distance = distance;
+        }
+
+        public double getDistance() {
+            return Distance;
+        }
+
+        public Cell getEnfant() {
+            return Enfant;
+        }
+
+        public Cell getParent() {
+            return Parent;
+        }
+    }
+
+    public Stack<Action> exploration_BFS(Cell[][] grid, Cell desiredCell) {
+
+        Cell Start_Enfant = getRobotCell(grid);
+        Cell End = desiredCell;
+        List<Cell> frontiere = new ArrayList<Cell>();
+        frontiere.add(Start);
+        // on fait une liste des endroits déjà explorer
+        List<Tree> Parent = new ArrayList<Tree>();
+
+
+        Tree Start = null ;
+        Start.setEnfant(Start_Enfant);
+
+        Parent.add(Start);
+
+        while (frontiere != null){
+
+            Cell CurentCell = frontiere.get(0);
+            frontiere.remove(0);
+
+            if(CurentCell == End){
+
+
+                break;}
+
+            for (Cell cell: Cell.getNeighborCells(CurentCell,grid)
+                 ) {
+                if(Parent.contains(cell)) continue;
+                frontiere.add(cell);
+                Tree Noeud =null;
+                Noeud.setEnfant(cell);
+                Noeud.setParent(CurentCell);
+                Parent.add(Noeud);
+            }
+            // TODO retrouver le chemin ( partir de la cellule END puis remonter la liste grace aux parents)
+            //avec algo en largeur, la liste parents contient tous les noeud vérifier
+
+        }
+
+
         return new Stack<Action>();
     }
 
-    public Stack<Action> exploration_2(Cell[][] grid, Cell desiredCell) {
+
+
+
+
+    public Stack<Action> exploration_GREEDY(Cell[][] grid, Cell desiredCell) {
+
+        Cell Start = getRobotCell(grid);
+        Cell End = desiredCell;
+        List<Tree> frontiere = new ArrayList<Tree>();
+        Tree Start_d = null;
+        Start_d.setEnfant(Start);
+        Start_d.setDistance(1000);
+
+
+        frontiere.add(Start_d);
+        // on fait une liste des endroits déjà explorer
+        List<Tree> Parent = new ArrayList<Tree>();
+        Parent.add(Start_d);
+
+        while (frontiere != null){
+
+            Cell CurentCell = frontiere.get(0).getEnfant();
+            frontiere.remove(0);
+            if(CurentCell == End) break;
+
+            for (Cell cell: Cell.getNeighborCells(CurentCell,grid) //todo fonction getNeighbour qui renvoie les voisins de la case
+            ) {
+                if(Parent.contains(cell)) continue;
+                double distance = getDistance(cell.getPosition(),End.getPosition()); // on calcule la distance restante
+
+                Tree front = null;
+                front.setDistance(distance);
+                front.setEnfant(cell);
+                front.setParent(CurentCell);
+
+                for(int i=0 ; i <frontiere.size(); i++){
+                    if(distance < frontiere.get(i).getDistance()){
+
+                        frontiere.add(i,front);
+
+                    }
+                    else {
+
+                        frontiere.add(front);
+
+                    }
+                }
+                Parent.add(front);
+            }
+
+
+        }
+/**
+        var cellPath = Cell.getCellPath(startCell, destination, cameFrom);
+        var actions = getActions(cellPath);
+ */
         return new Stack<Action>();
     }
 
