@@ -1,7 +1,10 @@
 package environment;
 
+import agent.Agent;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class Cell {
     public enum State {
@@ -42,8 +45,26 @@ public class Cell {
         return !equalCells(c1, c2);
     }
 
-    public static Cell[] getCellPath(Cell start, Cell end) {
+    public static Stack<Cell> getCellPath(Cell start, Cell end, List<Agent.Tree> Parent) {
 
+        Stack<Cell> cellpath = new Stack<Cell>();
+
+        Cell cell = end;
+        while (cell != start)
+        {
+            cellpath.push(cell);
+           for( Agent.Tree parent : Parent){
+
+               if(cell == parent.getEnfant()){
+                   cell = parent.getParent();
+                   break;
+               }
+           }
+        }
+
+        cellpath.push(start);
+
+        return cellpath;
     }
 
     public void setM_state(State m_state) {
