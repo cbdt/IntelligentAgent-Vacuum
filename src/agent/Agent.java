@@ -191,11 +191,6 @@ public class Agent implements Runnable {
         // Car là il se déplace même si c'est pas rentable.
         // Le seuil peut-être de 0, pas perdant.
 
-        if(getPerformance(desiredCell) < 0) { // on fait rien si pas rentable de se déplacer.
-            System.out.println("DO NOTHING");
-            return new Stack<>();
-        }
-
         return explore(grid, desiredCell);
     }
 
@@ -373,13 +368,13 @@ public class Agent implements Runnable {
             case EMPTY:
                 break;
             case DUST:
-                recompense = 3;
+                recompense = 2;
                 break;
             case JEWEL:
-                recompense = 3;
+                recompense = 2;
                 break;
             case DUST_JEWEL:
-                recompense = 6;
+                recompense = 4;
                 energieAction = 2;
                 break;
             default:
