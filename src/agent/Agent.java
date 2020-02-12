@@ -14,7 +14,7 @@ import java.util.*;
 public class Agent implements Runnable {
 
 
-    enum Exploration { BFS, GREEDY}
+    enum Exploration { BFS, A_STAR}
 
     public enum Action {
         PICK_UP,
@@ -48,7 +48,7 @@ public class Agent implements Runnable {
         this.m_currentPosition = m_environment.getInitialPosition();
         this.m_actions = new Stack<>();
 
-        this.m_explorationType = Exploration.BFS;
+        this.m_explorationType = Exploration.A_STAR;
     }
 
     @Override
@@ -64,10 +64,11 @@ public class Agent implements Runnable {
         int nbTour = 0;
         while(m_isAlive) {
 
-            if(nbTour % 5 == 0 ) {
+            if(nbTour == 6 ) {
                 Cell[][] perceivedGrid = observeEnvironment();
                 m_actions = updateState(perceivedGrid);
                 System.out.println(m_actions);
+                nbTour = 0;
             }
 
             Action action = chooseAction(m_actions);
@@ -201,8 +202,8 @@ public class Agent implements Runnable {
             case BFS:
                 actions = exploration_BFS(grid, desiredCell);
                 break;
-            case GREEDY:
-                //actions =  exploration_GREEDY(grid, desiredCell);
+            case A_STAR:
+                actions =  exploration_AStar(grid, desiredCell);
                 break;
         }
         return actions;
@@ -214,56 +215,13 @@ public class Agent implements Runnable {
     {
         return grid[m_currentPosition.getX()][m_currentPosition.getY()];
     }
-/*
-    public class Tree {
-
-        public Cell Parent;
-        public Tree Enfant;
-        public double Distance;
-
-        public Tree(Cell parent) {
-            this(parent, null, 1);
-        }
-
-        public Tree(Cell Parent , Cell Enfant, double Distance){
-            this.Parent = Parent;
-            this.Enfant = Enfant;
-            this.Distance = Distance;
-        }
-
-        public void setEnfant(Cell enfant) {
-            Enfant = enfant;
-        }
-
-        public void setParent(Cell parent) {
-            Parent = parent;
-        }
-
-        public void setDistance(double distance) {
-            Distance = distance;
-        }
-
-        public double getDistance() {
-            return Distance;
-        }
-
-        public Cell getEnfant() {
-            return Enfant;
-        }
-
-        public Cell getParent() {
-            return Parent;
-        }
-    }*/
-
 
 
     public Stack<Action> exploration_BFS(Cell[][] grid, Cell desiredCell) {
 
-        Map<Cell, Cell> parentsChild = new HashMap<>(); // Enfant: Parent
+        Map<Cell, Cell> parentMap = new HashMap<>(); // Enfant: Parent
         Cell start = getRobotCell(grid);
         Cell end = desiredCell;
-
 
         LinkedList<Cell> frontiere = new LinkedList<Cell>();
         frontiere.add(start);
@@ -272,10 +230,9 @@ public class Agent implements Runnable {
         LinkedList<Cell> visited = new LinkedList<>();
         visited.add(start);
 
-        parentsChild.put(start, null); // pas de parent
+        parentMap.put(start, null);
 
         while (!frontiere.isEmpty()){
-
             Cell currentCell = frontiere.poll();
 
             if(currentCell == end){  break;}
@@ -283,75 +240,93 @@ public class Agent implements Runnable {
             for (Cell cell: neighbors) {
                 if(visited.contains(cell)) continue;
                 frontiere.add(cell);
-                parentsChild.put(cell, currentCell);
+                parentMap.put(cell, currentCell);
                 visited.add(cell);
             }
 
         }
-        Stack<Cell> cellPath = Cell.getCellPath(end, parentsChild);
-        Stack<Action> actions = getActions(cellPath);
 
 
+        // TODO: duplicate with reconstructPath (not the same structure, start -> nil ; and reconstructPath the start node is not in the keys)
+        Stack<Cell> cellsPath = new Stack<>();
+        Cell cell = end;
+        while (cell != null)
+        {
+
+            cellsPath.push(cell);
+            cell = parentMap.get(cell);
+        }
+
+        Stack<Action> actions = getActions(cellsPath);
         return  actions;
     }
 
+    private Stack<Cell> reconstructPath(Map<Cell, Cell> parentMap, Cell cell) {
+        Stack<Cell> cellsPath = new Stack<>();
+        Cell current = cell;
+        cellsPath.push(current);
+        while(parentMap.keySet().contains(current)) {
+            current = parentMap.get(current);
+            cellsPath.push(current);
+        }
+        return cellsPath;
+    }
+
+    public Stack<Action> exploration_AStar(Cell[][] grid, Cell desiredCell) {
+        Cell start = getRobotCell(grid);
+
+        List<Cell> openSet = new LinkedList<>();
+        Map<Cell, Cell> parentMap = new HashMap<>();
+
+        Map<Cell, Double> gScore = new HashMap<>();
+        Map<Cell, Double> fScore = new HashMap<>();
+
+        gScore.put(start, 0.0);
+        fScore.put(start, getDistance(start.getPosition(), desiredCell.getPosition()));
+
+        openSet.add(start);
+
+        while (!openSet.isEmpty()) {
+            Cell currentCell = bestScore(openSet, fScore);
 
 
+            if (currentCell == desiredCell) {
+                return getActions(reconstructPath(parentMap, currentCell));
+            }
+            openSet.remove(currentCell);
 
-/*
-    public Stack<Action> exploration_GREEDY(Cell[][] grid, Cell desiredCell) {
-
-        Cell Start = getRobotCell(grid);
-        Cell End = desiredCell;
-        List<Tree> frontiere = new ArrayList<Tree>();
-        Tree Start_d = null;
-        Start_d.setEnfant(Start);
-        Start_d.setDistance(1000);
-
-
-        frontiere.add(Start_d);
-        // on fait une liste des endroits déjà explorer
-        List<Tree> Parent = new ArrayList<Tree>();
-        Parent.add(Start_d);
-
-        while (frontiere != null){
-
-            Cell CurentCell = frontiere.get(0).getEnfant();
-            frontiere.remove(0);
-            if(CurentCell == End) break;
-
-            for (Cell cell: Cell.getNeighborCells(CurentCell,grid) //todo fonction getNeighbour qui renvoie les voisins de la case
-            ) {
-                if(Parent.contains(cell)) continue;
-                double distance = getDistance(cell.getPosition(),End.getPosition()); // on calcule la distance restante
-
-                Tree front = null;
-                front.setDistance(distance);
-                front.setEnfant(cell);
-                front.setParent(CurentCell);
-
-                for(int i=0 ; i <frontiere.size(); i++){
-                    if(distance < frontiere.get(i).getDistance()){
-
-                        frontiere.add(i,front);
-
-                    }
-                    else {
-
-                        frontiere.add(front);
-
+            List<Cell> neighbors = Cell.getNeighborCells(currentCell, grid);
+            for (Cell cell: neighbors) {
+                // distance to neighbord.
+                Double score = gScore.getOrDefault(currentCell, Double.MAX_VALUE) + 1;
+                if(score < gScore.getOrDefault(cell, Double.MAX_VALUE)) {
+                    parentMap.put(cell, currentCell);
+                    gScore.put(cell, score);
+                    fScore.put(cell, gScore.get(cell) + getDistance(cell.getPosition(), desiredCell.getPosition()));
+                    if(!openSet.contains(cell)) {
+                        openSet.add(cell);
                     }
                 }
-                Parent.add(front);
             }
 
-
         }
-        Stack<Cell> cellpath = Cell.getCellPath(Start,End,Parent);
-        Stack<Action> Action = getAction(cellpath);
 
-        return  Action;
-    }*/
+        return new Stack<>();
+    }
+
+    private Cell bestScore(List<Cell> openSet, Map<Cell, Double> fScore) {
+        Cell bestCell = openSet.get(0);
+        Double bestPerf = Double.MAX_VALUE;
+
+        for (Cell cell: openSet) {
+            Double perf  = fScore.get(cell);
+            if(perf < bestPerf) {
+                bestCell = cell;
+                bestPerf = perf;
+            }
+        }
+        return bestCell;
+    }
 
 
 
@@ -384,18 +359,18 @@ public class Agent implements Runnable {
         // Malus : Energie dépensée (distance + action effectuée)
         double energieDistance = getDistance(m_currentPosition, cell.getPosition());
         double energie = energieAction + energieDistance;
-        System.out.println("ED: " + energieDistance + "; EA:"  + energieAction + "; REC" + recompense + " TOTAL" + (recompense - energie) );
+        //System.out.println("ED: " + energieDistance + "; EA:"  + energieAction + "; REC" + recompense + " TOTAL" + (recompense - energie) );
         return recompense - energie;
     }
 
     public double getDistance(Environment.Position a, Environment.Position b) {
-        System.out.println(a + " --> " + b);
+        //System.out.println(a + " --> " + b);
         return Math.sqrt(Math.pow(b.getX() - a.getX(), 2) + Math.pow(b.getY() - a.getY(), 2));
     }
 
     public Stack<Action> getActions(Stack<Cell> cellpath){
         List<Action> actionPath = new ArrayList<Action>();
-
+        System.out.println("CP " + cellpath);
 
         while (!cellpath.isEmpty() && cellpath.size() >= 2)
         {

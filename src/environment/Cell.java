@@ -55,16 +55,6 @@ public class Cell {
 
             cellPath.push(cell);
             cell = parentsChild.get(cell);
-
-
-
-           /*for( Agent.Tree parent : visited){
-
-               if(cell == parent.getEnfant()){
-                   cell = parent.getParent();
-                   break;
-               }
-           }*/
         }
 
         return cellPath;

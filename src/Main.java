@@ -3,6 +3,8 @@ import environment.Environment;
 
 public class Main {
 
+
+    // TODO: The agent currently don't learn... :'(
     public static void main(String[] args) {
 
         Environment environment = new Environment();
