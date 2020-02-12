@@ -97,16 +97,16 @@ public class Cell {
     public static List<Cell> getNeighborCells(Cell cell, Cell[][] grid) {
         List list = new ArrayList<Cell>();
 
-        if (cell.position.y > Environment.minY)
+        if (cell.position.y > 0)
             list.add(grid[cell.position.x][ cell.position.y - 1]);
 
-        if (cell.position.x < Environment.maxX)
+        if (cell.position.x < Environment.width - 1)
             list.add(grid[cell.position.x + 1][ cell.position.y]);
 
-        if (cell.position.y < Environment.maxY)
+        if (cell.position.y < Environment.height - 1)
             list.add(grid[cell.position.x][ cell.position.y + 1]);
 
-        if (cell.position.x > Environment.minX)
+        if (cell.position.x > 0)
             list.add(grid[cell.position.x - 1][ cell.position.y]);
 
         return list;

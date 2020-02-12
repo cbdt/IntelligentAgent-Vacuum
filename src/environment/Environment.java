@@ -6,10 +6,8 @@ import java.util.Random;
 
 public class Environment implements Runnable {
     //taille grille
-    static int minX = 0;
-    static int maxX = 4;
-    static int minY = 0;
-    static int maxY = 4;
+    static int width = 5;
+    static int height = 5;
     //proba d'apparition
     public int dustSpawnProb = 17;
     public int jewelSpawnProb = 6;
@@ -18,12 +16,12 @@ public class Environment implements Runnable {
     public Position robotPosition = new Position(0, 0);
     Random rand = new Random();
     //Grille
-    private Cell[][] grid = new Cell[maxX + 1][maxY + 1];
-    private int updateTime = 500;
+    private Cell[][] grid = new Cell[width][height];
+    private int updateTime = 1000;
 
     public void initGrid() {
-        for (int x = 0; x <= maxX; x++) {
-            for (int y = 0; y <= maxY; y++) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 grid[x][y] = new Cell(x, y);
             }
         }
@@ -136,24 +134,26 @@ public class Environment implements Runnable {
 
     private void updateUI() {
         clearConsole();
-        System.out.println("Performance: " + getPerformance());
-        displayLine();
-        for (int y = 0; y < maxY; y++) {
-            System.out.print("|");
-            for (int x = 0; x < maxX; x++) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Performance: " + getPerformance() + "\n");
+        displayLine(sb);
+        for (int y = 0; y < height; y++) {
+            sb.append("|");
+            for (int x = 0; x < width; x++) {
                 String symbol = getCellSymbol(new Position(x, y));
-                System.out.print(" " + symbol + " ");
+                sb.append(" " + symbol + " ");
             }
-            System.out.println("|");
+            sb.append("|\n");
         }
-        displayLine();
+        displayLine(sb);
+        System.out.println(sb.toString());
     }
 
-    private void displayLine() {
-        for (int i = 0; i < (3*(maxX+1))-1; i++) {
-            System.out.print("_");
+    private void displayLine(StringBuilder sb) {
+        for (int i = 0; i < (3*(width+1))-1; i++) {
+            sb.append("_");
         }
-        System.out.print("\n");
+        sb.append("\n");
     }
 
     private String getCellSymbol(Position position) {
@@ -186,8 +186,8 @@ public class Environment implements Runnable {
     }
 
     public void setNextCellState(Agent.Action action, Position position) {
-
         Cell.State currentState = getCellState(position);
+        System.out.println(action + " pos: " + position);
         switch (action) {
             case PICK_UP:
                 if (currentState == Cell.State.JEWEL) {
@@ -206,7 +206,7 @@ public class Environment implements Runnable {
         return performance;
     }
 
-    public void updatePerformance(Agent.Action action, Position position) {
+    private void updatePerformance(Agent.Action action, Position position) {
         switch (getCellState(position)) {
             case JEWEL:
                 if (action == Agent.Action.CLEAN) {
@@ -277,8 +277,8 @@ public class Environment implements Runnable {
 
         public static Position random() {
             Random r = new Random();
-            int x = r.nextInt(maxX);
-            int y = r.nextInt(maxY);
+            int x = r.nextInt(width);
+            int y = r.nextInt(height);
             return new Position(x, y);
         }
 

@@ -61,14 +61,27 @@ public class Agent implements Runnable {
     }
 
     private void evolve() {
+        int nbTour = 0;
         while(m_isAlive) {
-            Cell[][] perceivedGrid = observeEnvironment();
-            m_actions = updateState(perceivedGrid);
+
+            if(nbTour % 5 == 0 ) {
+                Cell[][] perceivedGrid = observeEnvironment();
+                m_actions = updateState(perceivedGrid);
+                System.out.println(m_actions);
+            }
+
             Action action = chooseAction(m_actions);
             processAction(action);
+            nbTour++;
 
             m_isAlive = m_battery > 0;
+            try {
+                Thread.sleep(1000); // ça va trop vite sinn
+            }catch (Exception e) {
+
+            }
         }
+        System.out.println("I'm dead :(");
     }
 
     /* On essaie d'avoir le moins de side-effect pour les fonctions ci-dessous, plus lisible si fonctions "pures" */
@@ -78,7 +91,7 @@ public class Agent implements Runnable {
 
     private Stack<Action> updateState(Cell[][] perceivedGrid) {
         List<Cell> beliefs = getBelief(perceivedGrid);
-        Cell desiredCell = getDesire(beliefs);;
+        Cell desiredCell = getDesire(beliefs);
         return getIntention(perceivedGrid, desiredCell);
     }
 
@@ -175,10 +188,9 @@ public class Agent implements Runnable {
         // Car là il se déplace même si c'est pas rentable.
         // Le seuil peut-être de 0, pas perdant.
 
-        /*if(getPerformance(desiredCell) < 0) { // on fait rien si pas rentable de se déplacer.
-            System.out.println("epty");
+        if(getPerformance(desiredCell) < 0) { // on fait rien si pas rentable de se déplacer.
             return new Stack<>();
-        }*/
+        }
 
         return explore(grid, desiredCell);
     }
@@ -358,7 +370,7 @@ public class Agent implements Runnable {
                 recompense = 1;
                 break;
             case JEWEL:
-                recompense = 2;
+                recompense = 1;
                 break;
             case DUST_JEWEL:
                 recompense = 3;
