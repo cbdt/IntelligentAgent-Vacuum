@@ -8,10 +8,10 @@ public class Main {
 
     // TODO: The agent currently don't learn... :'(
     public static void main(String[] args) {
-
-        while (true) {
+        boolean redo = true;
+        while (redo) {
             System.out.println("Agent intelligent aspirateur");
-            System.out.println("Veuillez choisir un type d'exploration\n\t-1)Exploration BFS\n\t-2)Exploration A*");
+            System.out.println("Veuillez choisir un type d'exploration\n\t1) Exploration BFS\n\t2) Exploration A*");
             System.out.println("1 ou 2 : ");
             Scanner sc = new Scanner(System.in);
             String choice = sc.nextLine();
@@ -22,6 +22,7 @@ public class Main {
                 System.out.println("Veuillez saisir un nombre correct.");
                 continue;
             }
+            redo = false;
 
             Agent.Exploration exploration = Agent.Exploration.BFS;
             if(choice_number == 2)

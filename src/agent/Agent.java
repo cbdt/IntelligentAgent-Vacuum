@@ -60,7 +60,7 @@ public class Agent implements Runnable {
         int nbTour = 0;
         while(m_isAlive) {
 
-            if(nbTour == 6 ) {
+            if(nbTour == 6 || m_actions.isEmpty()) {
                 Cell[][] perceivedGrid = observeEnvironment();
                 m_actions = updateState(perceivedGrid);
                 //System.out.println(m_actions);
@@ -73,7 +73,7 @@ public class Agent implements Runnable {
 
             m_isAlive = m_battery > 0;
             try {
-                Thread.sleep(1000); // ça va trop vite sinn
+                Thread.sleep(750); // ça va trop vite sinn
             }catch (Exception e) {
 
             }
@@ -162,7 +162,7 @@ public class Agent implements Runnable {
      */
     private Cell getDesire(List<Cell> beliefs) {
         double bestPerformance = Integer.MIN_VALUE;
-        Cell bestCell = new Cell();
+        Cell bestCell = null;
         for(Cell cell: beliefs) {
             double currentPerformance = getPerformance(cell);
             if(currentPerformance > bestPerformance)  {
@@ -186,6 +186,10 @@ public class Agent implements Runnable {
         // TODO: Peut-être ajouter une condition pour savoir si c'est rentable de se déplacer en terme (cf. fixer un seuil minimal ?)
         // Car là il se déplace même si c'est pas rentable.
         // Le seuil peut-être de 0, pas perdant.
+
+        if(desiredCell == null){
+            return new Stack<>();
+        }
 
         return explore(grid, desiredCell);
     }
@@ -251,6 +255,8 @@ public class Agent implements Runnable {
             cellsPath.push(cell);
             cell = parentMap.get(cell);
         }
+        //System.out.println("start : " + start  + " end : " + end);
+        //System.out.println("CP : " + cellsPath);
 
         Stack<Action> actions = getActions(cellsPath);
         return  actions;
@@ -379,7 +385,7 @@ public class Agent implements Runnable {
 
         Stack<Action> actions = new Stack<Action>();
 
-        if(!actionPath.isEmpty()) {
+        if(!actionPath.isEmpty() || cellpath.size() == 1) { // qqlchose à spawné là ou on est
                 Cell desiredCell = cellpath.get(cellpath.size() - 1);
 
                 switch (desiredCell.getState()) {
@@ -402,7 +408,5 @@ public class Agent implements Runnable {
         }
 
         return actions;
-
-
     }
 }

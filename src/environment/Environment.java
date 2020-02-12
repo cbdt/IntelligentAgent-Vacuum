@@ -17,7 +17,7 @@ public class Environment implements Runnable {
     Random rand = new Random();
     //Grille
     private Cell[][] grid = new Cell[width][height];
-    private int updateTime = 1000;
+    private int updateTime = 750;
 
     public void initGrid() {
         for (int x = 0; x < width; x++) {
