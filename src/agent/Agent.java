@@ -167,12 +167,15 @@ public class Agent implements Runnable {
         double bestPerformance = Integer.MIN_VALUE;
         Cell bestCell = new Cell();
         for(Cell cell: beliefs) {
+            System.out.println("B " + cell);
             double currentPerformance = getPerformance(cell);
             if(currentPerformance > bestPerformance)  {
                 bestCell = cell;
                 bestPerformance = currentPerformance;
             }
         }
+
+        System.out.println("GOAL : " + bestCell);
 
         return bestCell;
     }
@@ -189,6 +192,7 @@ public class Agent implements Runnable {
         // Le seuil peut-être de 0, pas perdant.
 
         if(getPerformance(desiredCell) < 0) { // on fait rien si pas rentable de se déplacer.
+            System.out.println("DO NOTHING");
             return new Stack<>();
         }
 
@@ -264,6 +268,8 @@ public class Agent implements Runnable {
         Map<Cell, Cell> parentsChild = new HashMap<>(); // Enfant: Parent
         Cell start = getRobotCell(grid);
         Cell end = desiredCell;
+
+
         LinkedList<Cell> frontiere = new LinkedList<Cell>();
         frontiere.add(start);
 
@@ -367,13 +373,13 @@ public class Agent implements Runnable {
             case EMPTY:
                 break;
             case DUST:
-                recompense = 1;
+                recompense = 3;
                 break;
             case JEWEL:
-                recompense = 1;
+                recompense = 3;
                 break;
             case DUST_JEWEL:
-                recompense = 3;
+                recompense = 6;
                 energieAction = 2;
                 break;
             default:
@@ -383,11 +389,12 @@ public class Agent implements Runnable {
         // Malus : Energie dépensée (distance + action effectuée)
         double energieDistance = getDistance(m_currentPosition, cell.getPosition());
         double energie = energieAction + energieDistance;
-
+        System.out.println("ED: " + energieDistance + "; EA:"  + energieAction + "; REC" + recompense + " TOTAL" + (recompense - energie) );
         return recompense - energie;
     }
 
     public double getDistance(Environment.Position a, Environment.Position b) {
+        System.out.println(a + " --> " + b);
         return Math.sqrt(Math.pow(b.getX() - a.getX(), 2) + Math.pow(b.getY() - a.getY(), 2));
     }
 

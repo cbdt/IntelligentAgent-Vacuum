@@ -75,7 +75,7 @@ public class Cell {
     }
 
     public Environment.Position getPosition() {
-        return new Environment.Position(0, 0);
+        return this.position;
     }
 
     public boolean isAbove(Cell cell) {
