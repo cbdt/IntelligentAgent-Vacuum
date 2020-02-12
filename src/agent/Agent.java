@@ -14,7 +14,7 @@ import java.util.*;
 public class Agent implements Runnable {
 
 
-    enum Exploration { BFS, A_STAR}
+    public enum Exploration { BFS, A_STAR}
 
     public enum Action {
         PICK_UP,
@@ -37,7 +37,7 @@ public class Agent implements Runnable {
 
     private Stack<Action> m_actions;
 
-    public Agent(Environment environment) {
+    public Agent(Environment environment, Exploration exploration) {
         this.m_environment = environment;
 
         this.m_gridSensor = new GridSensor(m_environment);
@@ -48,16 +48,12 @@ public class Agent implements Runnable {
         this.m_currentPosition = m_environment.getInitialPosition();
         this.m_actions = new Stack<>();
 
-        this.m_explorationType = Exploration.A_STAR;
+        this.m_explorationType = exploration;
     }
 
     @Override
     public void run() {
         evolve();
-    }
-
-    public void setExploration(Exploration exploration) {
-        this.m_explorationType = exploration;
     }
 
     private void evolve() {
@@ -67,7 +63,7 @@ public class Agent implements Runnable {
             if(nbTour == 6 ) {
                 Cell[][] perceivedGrid = observeEnvironment();
                 m_actions = updateState(perceivedGrid);
-                System.out.println(m_actions);
+                //System.out.println(m_actions);
                 nbTour = 0;
             }
 
@@ -168,7 +164,6 @@ public class Agent implements Runnable {
         double bestPerformance = Integer.MIN_VALUE;
         Cell bestCell = new Cell();
         for(Cell cell: beliefs) {
-            System.out.println("B " + cell);
             double currentPerformance = getPerformance(cell);
             if(currentPerformance > bestPerformance)  {
                 bestCell = cell;
@@ -176,7 +171,7 @@ public class Agent implements Runnable {
             }
         }
 
-        System.out.println("GOAL : " + bestCell);
+        //System.out.println("GOAL : " + bestCell);
 
         return bestCell;
     }
@@ -370,7 +365,7 @@ public class Agent implements Runnable {
 
     public Stack<Action> getActions(Stack<Cell> cellpath){
         List<Action> actionPath = new ArrayList<Action>();
-        System.out.println("CP " + cellpath);
+        //System.out.println("CP " + cellpath);
 
         while (!cellpath.isEmpty() && cellpath.size() >= 2)
         {

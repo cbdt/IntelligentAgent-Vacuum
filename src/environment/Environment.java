@@ -187,7 +187,6 @@ public class Environment implements Runnable {
 
     public void setNextCellState(Agent.Action action, Position position) {
         Cell.State currentState = getCellState(position);
-        System.out.println(action + " pos: " + position);
         switch (action) {
             case PICK_UP:
                 if (currentState == Cell.State.JEWEL) {
